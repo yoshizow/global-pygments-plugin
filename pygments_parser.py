@@ -7,8 +7,7 @@ from pygments import lexers
 from pygments.token import Token
 
 # In most cases, lexers can be looked up with lowercase form of formal
-# language names.
-# This dictionary defines exceptions.
+# language names. This dictionary defines exceptions.
 LANGUAGE_ALIASES = {
     'fantom':     'fan',
     'haxe':       'haXe',

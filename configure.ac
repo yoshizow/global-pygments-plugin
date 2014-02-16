@@ -33,15 +33,9 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 
-dnl
-dnl Currently, the absolute path name of perl is required only for CGI script.
-dnl So, if you don't use the -f(--form) option of htags(1), it is not required.
-dnl
-AC_PATH_PROG(PERL, perl, no)
-if test ${ac_cv_path_PERL} = no; then
-	PERL=SPECIFY_ABSOLUTE_PATH_OF_PERL
-fi
-AC_CHECK_TOOL(AR, ar)
+AM_PATH_PYTHON([2.6])
+AC_DEFINE_UNQUOTED(PYTHON, "$PYTHON", [Path to python executable.])
+AC_SUBST(PYTHON)
 
 AC_GNU_SOURCE
 
@@ -69,7 +63,7 @@ AC_CHECK_FUNCS([dup2 strstr])
 
 AC_DJGPP
 
-AM_CPPFLAGS='-I$(top_srcdir)/libparser'
+AM_CPPFLAGS='-I$(top_srcdir)/libparser -DGTAGSDATADIR=\"$(datadir)/gtags\"'
 
 AC_SUBST(AM_CPPFLAGS)
 

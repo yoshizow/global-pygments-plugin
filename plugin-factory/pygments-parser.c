@@ -43,8 +43,7 @@
 
 #include "parser.h"
 
-#define PYTHON "/usr/bin/python"
-#define PYGMENTS_PARSER "/usr/local/share/gtags/pygments_parser.py"
+#define PYGMENTS_PARSER (GTAGSDATADIR "/pygments_parser.py")
 
 /*
  * Function layer plugin parser sample
@@ -64,7 +63,6 @@ static pid_t pid;
 static FILE *ip, *op;
 static char *linebuf;
 static size_t bufsize;
-static char *ctagsnotfound = "Exuberant Ctags not found. Please see ./configure --help.";
 
 static void
 copy_langmap_converting_cpp(char *dst, const char *src)
@@ -87,7 +85,7 @@ copy_langmap_converting_cpp(char *dst, const char *src)
 }
 
 static void
-start_ctags(const struct parser_param *param)
+start_process(const struct parser_param *param)
 {
 	int opipe[2], ipipe[2];
 
@@ -130,11 +128,11 @@ start_ctags(const struct parser_param *param)
 }
 
 #ifdef __GNUC__
-static void terminate_ctags(void) __attribute__((destructor));
+static void terminate_process(void) __attribute__((destructor));
 #endif
 
 static void
-terminate_ctags(void)
+terminate_process(void)
 {
 	if (op == NULL)
 		return;
@@ -172,7 +170,7 @@ get_line(const struct parser_param *param)
 }
 
 static void
-put_line(char *ctags_x, const struct parser_param *param)
+put_line(char *line, const struct parser_param *param)
 {
 	int lineno;
 	int type = PARSER_DEF;
@@ -186,7 +184,7 @@ put_line(char *ctags_x, const struct parser_param *param)
 	 * ctags -x --gtags ...
 	 * D main              326 global/global.c  main(int argc, char **argv)
 	 */
-	switch (*ctags_x) {
+	switch (*line) {
 	case 'D':
 		type = PARSER_DEF;
 		break;
@@ -194,37 +192,37 @@ put_line(char *ctags_x, const struct parser_param *param)
 		type = PARSER_REF_SYM;
 		break;
 	default:
-		param->die("unexpected type string: %s", ctags_x);
+		param->die("unexpected type string: %s", line);
 	}
 	/* skip type string */
-	while (*ctags_x && !isspace((unsigned char)*ctags_x))
-		ctags_x++;
-	while (*ctags_x  && isspace((unsigned char)*ctags_x))
-		ctags_x++;
-	filename = strstr(ctags_x, param->file);
-	if (filename == NULL || filename == ctags_x)
+	while (*line && !isspace((unsigned char)*line))
+		line++;
+	while (*line  && isspace((unsigned char)*line))
+		line++;
+	filename = strstr(line, param->file);
+	if (filename == NULL || filename == line)
 		return;
 	p = filename - 1;
 	if (!isspace((unsigned char)*p))
 		return;
-	while (p >= ctags_x && isspace((unsigned char)*p))
+	while (p >= line && isspace((unsigned char)*p))
 		*p-- = '\0';
-	if (p < ctags_x)
+	if (p < line)
 		return;
 	if (!isdigit((unsigned char)*p))
 		return;
-	while (p >= ctags_x && isdigit((unsigned char)*p))
+	while (p >= line && isdigit((unsigned char)*p))
 		p--;
-	if (p < ctags_x)
+	if (p < line)
 		return;
 	lineno = atoi(p + 1);
 	if (!isspace((unsigned char)*p))
 		return;
-	while (p >= ctags_x && isspace((unsigned char)*p))
+	while (p >= line && isspace((unsigned char)*p))
 		*p-- = '\0';
-	if (p < ctags_x)
+	if (p < line)
 		return;
-	while (p >= ctags_x && !isspace((unsigned char)*p))
+	while (p >= line && !isspace((unsigned char)*p))
 		p--;
 	tagname = p + 1;
 	p = filename + strlen(param->file);
@@ -241,25 +239,25 @@ put_line(char *ctags_x, const struct parser_param *param)
 void
 parser(const struct parser_param *param)
 {
-	char *ctags_x;
+	char *line;
 
 	assert(param->size >= sizeof(*param));
 
 	if (op == NULL)
-		start_ctags(param);
+		start_process(param);
 
 	/* Write path of input file to pipe. */
 	fputs(param->file, op);
 	putc('\n', op);
 	fflush(op);
 
-	/* Read output of ctags command. */
+	/* Read output of the process. */
 	for (;;) {
-		ctags_x = get_line(param);
-		if (ctags_x == NULL)
+		line = get_line(param);
+		if (line == NULL)
 			param->die("unexpected EOF.");
-		if (strcmp(ctags_x, TERMINATOR) == 0)
+		if (strcmp(line, TERMINATOR) == 0)
 			break;
-		put_line(ctags_x, param);
+		put_line(line, param);
 	}
 }
