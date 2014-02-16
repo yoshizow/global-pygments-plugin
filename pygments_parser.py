@@ -16,6 +16,62 @@ LANGUAGE_ALIASES = {
     'xbase':      'XBase'
 }
 
+class PygmentsParser:
+    def __init__(self, path, text, lexer):
+        self.path = path
+        self.text = text
+        self.lexer = lexer
+        self.lines_index = None
+
+    def parse(self):
+        self.lines_index = self.build_lines_index(self.text)
+        tokens = self.lexer.get_tokens_unprocessed(self.text)
+        self.parse_tokens(tokens)
+
+    def build_lines_index(self, text):
+        lines_index = []
+        cur = 0
+        while True:
+            i = text.find('\n', cur)
+            if i == -1:
+                break
+            cur = i + 1
+            lines_index.append(cur)
+        lines_index.append(len(text))    # sentinel
+        return lines_index
+
+    def parse_tokens(self, tokens):
+        cur_line = 0
+        for index, tokentype, value in tokens:
+            if tokentype in Token.Name:
+                while self.lines_index[cur_line] <= index:
+                    cur_line += 1
+                if self.is_definition_token(tokentype):
+                    typ = 'D'
+                    image = self.get_line_image(cur_line)
+                else:
+                    typ = 'R'
+                    image = ''
+                value = re.sub('\s+', '', value)    # remove newline
+                if value:
+                    print typ, value, cur_line + 1, self.path, image
+
+    def is_definition_token(self, tokentype):
+        if tokentype in Token.Name.Function or \
+           tokentype in Token.Name.Class:
+            return True
+        else:
+            return False
+
+    def get_line_image(self, line):
+        if line > 0:
+            beg = self.lines_index[line - 1]
+        else:
+            beg = 0
+        end = self.lines_index[line]
+        image = self.text[beg:end].rstrip()
+        return image
+
 def parse_langmap(string):
     langmap = {}
     mappings = string.split(',')
@@ -38,50 +94,6 @@ def get_lexer_by_langmap(path, langmap):
         return lexer
     return None
 
-def build_lines_index(text):
-    lines_index = []
-    cur = 0
-    while True:
-        i = text.find('\n', cur)
-        if i == -1:
-            break
-        cur = i + 1
-        lines_index.append(cur)
-    lines_index.append(len(text))    # sentinel
-    return lines_index
-
-def is_definition_token(tokentype):
-    if tokentype in Token.Name.Function or \
-       tokentype in Token.Name.Class:
-        return True
-    else:
-        return False
-
-def get_line_image(line, lines_index, text):
-    if line > 0:
-        beg = lines_index[line - 1]
-    else:
-        beg = 0
-    end = lines_index[line]
-    image = text[beg:end].rstrip()
-    return image
-
-def parse_tokens(tokens, path, lines_index, text):
-    cur_line = 0
-    for index, tokentype, value in tokens:
-        if tokentype in Token.Name:
-            while lines_index[cur_line] <= index:
-                cur_line += 1
-            if is_definition_token(tokentype):
-                typ = 'D'
-                image = get_line_image(cur_line, lines_index, text)
-            else:
-                typ = 'R'
-                image = ''
-            value = re.sub('\s+', '', value)    # remove newline
-            if value:
-                print typ, value, cur_line + 1, path, image
-
 def read_file(path):
     try:
         with open(path, 'r') as f:
@@ -91,14 +103,13 @@ def read_file(path):
         print >> sys.stderr, e
         return None
 
-def parse(path, langmap):
+def handle_file(path, langmap):
     lexer = get_lexer_by_langmap(path, langmap)
     if lexer:
         text = read_file(path)
         if text:
-            lines_index = build_lines_index(text)
-            tokens = lexer.get_tokens_unprocessed(text)
-            parse_tokens(tokens, path, lines_index, text)
+            parser = PygmentsParser(path, text, lexer)
+            parser.parse()
 
 def handle_requests(langmap):
     while True:
@@ -106,7 +117,7 @@ def handle_requests(langmap):
         if not path:
             break
         path = path.rstrip()
-        parse(path, langmap)
+        handle_file(path, langmap)
         print '###terminator###'
         sys.stdout.flush()
 
@@ -116,5 +127,4 @@ parser.add_option('--langmap', dest='langmap')
 if not options.langmap:
     parser.error('--langmap option not given')
 langmap = parse_langmap(options.langmap)
-
 handle_requests(langmap)
