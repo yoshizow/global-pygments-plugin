@@ -1,6 +1,7 @@
 import os
 import sys
 import re
+import string
 from optparse import OptionParser
 import pygments
 from pygments import lexers
@@ -16,11 +17,19 @@ LANGUAGE_ALIASES = {
     'xbase':      'XBase'
 }
 
+# Symbol characters: all punctuation chars except some chars
+SYMBOL_CHARACTERS = string.punctuation.translate(None, '-_.')
+
 class PygmentsParser:
-    def __init__(self, path, text, lexer):
+    class Options:
+        def __init__(self):
+            self.strip_symbol_chars = True
+
+    def __init__(self, path, text, lexer, options):
         self.path = path
         self.text = text
         self.lexer = lexer
+        self.options = options
         self.lines_index = None
 
     def parse(self):
@@ -53,6 +62,8 @@ class PygmentsParser:
                     typ = 'R'
                     image = ''
                 value = re.sub('\s+', '', value)    # remove newline
+                if self.options.strip_symbol_chars:
+                    value = value.strip(SYMBOL_CHARACTERS)
                 if value:
                     print typ, value, cur_line + 1, self.path, image
 
@@ -103,28 +114,38 @@ def read_file(path):
         print >> sys.stderr, e
         return None
 
-def handle_file(path, langmap):
+def handle_file(path, langmap, options):
     lexer = get_lexer_by_langmap(path, langmap)
     if lexer:
         text = read_file(path)
         if text:
-            parser = PygmentsParser(path, text, lexer)
+            parser = PygmentsParser(path, text, lexer, options)
             parser.parse()
 
-def handle_requests(langmap):
+def handle_requests(langmap, options):
     while True:
         path = sys.stdin.readline()
         if not path:
             break
         path = path.rstrip()
-        handle_file(path, langmap)
+        handle_file(path, langmap, options)
         print '###terminator###'
         sys.stdout.flush()
 
-parser = OptionParser()
-parser.add_option('--langmap', dest='langmap')
-(options, args) = parser.parse_args()
+def get_parser_options_from_env(parser_options):
+    env = os.getenv('GTAGSPYGMENTSOPTS')
+    if env:
+        for s in env.split(','):
+            s = s.strip()
+            if s == 'nostripsymbolchars':
+                parser_options.strip_symbol_chars = False
+
+opt_parser = OptionParser()
+opt_parser.add_option('--langmap', dest='langmap')
+(options, args) = opt_parser.parse_args()
 if not options.langmap:
-    parser.error('--langmap option not given')
+    opt_parser.error('--langmap option not given')
 langmap = parse_langmap(options.langmap)
-handle_requests(langmap)
+parser_options = PygmentsParser.Options()
+get_parser_options_from_env(parser_options)
+handle_requests(langmap, parser_options)
