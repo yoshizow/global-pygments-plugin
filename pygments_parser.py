@@ -56,33 +56,13 @@ class PygmentsParser:
                 if tokentype in Token.Name:
                     while self.lines_index[cur_line] <= index:
                         cur_line += 1
-                    if self.is_definition_token(tokentype):
-                        typ = 'D'
-                        image = self.get_line_image(cur_line)
-                    else:
-                        typ = 'R'
-                        image = ''
+                    typ = 'R'
+                    image = ''
                     value = re.sub('\s+', '', value)    # remove newline
                     if self.options.strip_symbol_chars:
                         value = value.strip(SYMBOL_CHARACTERS)
                     if value:
                         print typ, value, cur_line + 1, self.path, image
-
-        def is_definition_token(self, tokentype):
-            if tokentype in Token.Name.Function or \
-                    tokentype in Token.Name.Class:
-                return True
-            else:
-                return False
-
-        def get_line_image(self, line):
-            if line > 0:
-                beg = self.lines_index[line - 1]
-            else:
-                beg = 0
-            end = self.lines_index[line]
-            image = self.text[beg:end].rstrip()
-            return image
 
     def __init__(self, langmap, options):
         self.langmap = langmap
