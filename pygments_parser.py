@@ -23,7 +23,7 @@ SYMBOL_CHARACTERS = string.punctuation.translate(None, '-_.')
 class PygmentsParser:
     class Options:
         def __init__(self):
-            self.strip_symbol_chars = True
+            self.strip_symbol_chars = False
 
     def __init__(self, path, text, lexer, options):
         self.path = path
@@ -137,8 +137,8 @@ def get_parser_options_from_env(parser_options):
     if env:
         for s in env.split(','):
             s = s.strip()
-            if s == 'nostripsymbolchars':
-                parser_options.strip_symbol_chars = False
+            if s == 'stripsymbolchars':
+                parser_options.strip_symbol_chars = True
 
 opt_parser = OptionParser()
 opt_parser.add_option('--langmap', dest='langmap')
