@@ -36,7 +36,7 @@ class PygmentsParser:
         def parse(self):
             self.lines_index = self.build_lines_index(self.text)
             tokens = self.lexer.get_tokens_unprocessed(self.text)
-            self.parse_tokens(tokens)
+            return self.parse_tokens(tokens)
 
         def build_lines_index(self, text):
             lines_index = []
@@ -51,18 +51,20 @@ class PygmentsParser:
             return lines_index
 
         def parse_tokens(self, tokens):
+            result = {}
             cur_line = 0
             for index, tokentype, value in tokens:
                 if tokentype in Token.Name:
                     while self.lines_index[cur_line] <= index:
                         cur_line += 1
-                    typ = 'R'
+                    isdef = False
                     image = ''
                     value = re.sub('\s+', '', value)    # remove newline
                     if self.options.strip_symbol_chars:
                         value = value.strip(SYMBOL_CHARACTERS)
                     if value:
-                        print typ, value, cur_line + 1, self.path, image
+                        result[(isdef, value, cur_line + 1)] = image
+            return result
 
     def __init__(self, langmap, options):
         self.langmap = langmap
@@ -74,7 +76,8 @@ class PygmentsParser:
             text = self.read_file(path)
             if text:
                 parser = self.ContentParser(path, text, lexer, self.options)
-                parser.parse()
+                return parser.parse()
+        return {}
 
     def get_lexer_by_langmap(self, path):
         ext = os.path.splitext(path)[1]
@@ -114,7 +117,13 @@ def handle_requests(langmap, options):
         if not path:
             break
         path = path.rstrip()
-        parser.parse(path)
+        tags = parser.parse(path)
+        for (isdef, tag, lnum),image in tags.iteritems():
+            if isdef:
+                typ = 'D'
+            else:
+                typ = 'R'
+            print typ, tag, lnum, path, image
         print '###terminator###'
         sys.stdout.flush()
 
