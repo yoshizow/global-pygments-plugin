@@ -1,4 +1,7 @@
+# -*- coding: utf-8 -*-
+
 import os
+import subprocess
 import sys
 import re
 import string
@@ -19,6 +22,8 @@ LANGUAGE_ALIASES = {
 
 # Symbol characters: all punctuation chars except some chars
 SYMBOL_CHARACTERS = string.punctuation.translate(None, '-_.')
+
+TERMINATOR = '###terminator###\n'
 
 class PygmentsParser:
     class Options:
@@ -99,6 +104,28 @@ class PygmentsParser:
             print >> sys.stderr, e
             return None
 
+class CtagsParser:
+    def __init__(self):
+        self.process = subprocess.Popen(['ctags', '-xu', '--filter', '--filter-terminator=' + TERMINATOR + '\n', '--format=1'], bufsize=-1,
+                                        stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
+        self.child_stdout = self.process.stdout
+        self.child_stdin = self.process.stdin
+
+    def parse(self, path):
+        print >> self.child_stdin, path
+        self.child_stdin.flush()
+        result = {}
+        while True:
+            line = self.child_stdout.readline()
+            if not line or line.startswith(TERMINATOR):
+                break
+            match = re.search(r'(\S+)\s+(\d+)\s+' + re.escape(path) + '\s+(.*)$', line)
+            if match:
+                (tag, lnum, image) = match.groups()
+                isdef = True
+                result[(isdef, tag, lnum)] = image
+        return result
+
 def parse_langmap(string):
     langmap = {}
     mappings = string.split(',')
@@ -111,7 +138,7 @@ def parse_langmap(string):
     return langmap
 
 def handle_requests(langmap, options):
-    parser = PygmentsParser(langmap, options)
+    parser = CtagsParser()
     while True:
         path = sys.stdin.readline()
         if not path:
