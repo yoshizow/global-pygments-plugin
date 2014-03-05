@@ -126,6 +126,24 @@ class CtagsParser:
                 result[(isdef, tag, lnum)] = image
         return result
 
+class MergingParser:
+    def __init__(self, def_parser, ref_parser):
+        self.def_parser = def_parser
+        self.ref_parser = ref_parser
+        pass
+
+    def parse(self, path):
+        # TODO: run in parallel
+        def_result = self.def_parser.parse(path)
+        ref_result = self.ref_parser.parse(path)
+        result = def_result.copy()
+        result.update(ref_result)
+        for (tag, lnum, isdef) in def_result:
+            ref_entry = (tag, lnum, False)
+            if ref_entry in ref_result:
+                del result[ref_entry]
+        return result
+
 def parse_langmap(string):
     langmap = {}
     mappings = string.split(',')
@@ -138,7 +156,9 @@ def parse_langmap(string):
     return langmap
 
 def handle_requests(langmap, options):
-    parser = CtagsParser()
+    ctags_parser = CtagsParser()
+    pygments_parser = PygmentsParser(langmap, options)
+    parser = MergingParser(ctags_parser, pygments_parser)
     while True:
         path = sys.stdin.readline()
         if not path:
