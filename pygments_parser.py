@@ -124,7 +124,7 @@ class CtagsParser:
                 if self.options.strip_symbol_chars:
                     tag = tag.strip(SYMBOL_CHARACTERS)
                 if tag:
-                    result[(True, tag, lnum)] = image
+                    result[(True, tag, int(lnum))] = image
         return result
 
 class MergingParser:
@@ -138,8 +138,8 @@ class MergingParser:
         ref_result = self.ref_parser.parse(path)
         result = def_result.copy()
         result.update(ref_result)
-        for (tag, lnum, isdef) in def_result:
-            ref_entry = (tag, lnum, False)
+        for (isdef, tag, lnum) in def_result:
+            ref_entry = (False, tag, lnum)
             if ref_entry in ref_result:
                 del result[ref_entry]
         return result
@@ -171,7 +171,7 @@ def handle_requests(langmap, options):
             else:
                 typ = 'R'
             print typ, tag, lnum, path, image
-        print '###terminator###'
+        print TERMINATOR,
         sys.stdout.flush()
 
 def get_parser_options_from_env(parser_options):
