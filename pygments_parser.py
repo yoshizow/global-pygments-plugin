@@ -25,11 +25,11 @@ SYMBOL_CHARACTERS = string.punctuation.translate(None, '-_.')
 
 TERMINATOR = '###terminator###\n'
 
-class PygmentsParser:
-    class Options:
-        def __init__(self):
-            self.strip_symbol_chars = False
+class ParserOptions:
+    def __init__(self):
+        self.strip_symbol_chars = False
 
+class PygmentsParser:
     class ContentParser:
         def __init__(self, path, text, lexer, options):
             self.path = path
@@ -58,17 +58,15 @@ class PygmentsParser:
         def parse_tokens(self, tokens):
             result = {}
             cur_line = 0
-            for index, tokentype, value in tokens:
+            for index, tokentype, tag in tokens:
                 if tokentype in Token.Name:
                     while self.lines_index[cur_line] <= index:
                         cur_line += 1
-                    isdef = False
-                    image = ''
-                    value = re.sub('\s+', '', value)    # remove newline
+                    tag = re.sub('\s+', '', tag)    # remove newline
                     if self.options.strip_symbol_chars:
-                        value = value.strip(SYMBOL_CHARACTERS)
-                    if value:
-                        result[(isdef, value, cur_line + 1)] = image
+                        tag = tag.strip(SYMBOL_CHARACTERS)
+                    if tag:
+                        result[(False, tag, cur_line + 1)] = ''
             return result
 
     def __init__(self, langmap, options):
@@ -105,11 +103,12 @@ class PygmentsParser:
             return None
 
 class CtagsParser:
-    def __init__(self):
+    def __init__(self, options):
         self.process = subprocess.Popen(['ctags', '-xu', '--filter', '--filter-terminator=' + TERMINATOR + '\n', '--format=1'], bufsize=-1,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
         self.child_stdout = self.process.stdout
         self.child_stdin = self.process.stdin
+        self.options = options
 
     def parse(self, path):
         print >> self.child_stdin, path
@@ -122,8 +121,10 @@ class CtagsParser:
             match = re.search(r'(\S+)\s+(\d+)\s+' + re.escape(path) + '\s+(.*)$', line)
             if match:
                 (tag, lnum, image) = match.groups()
-                isdef = True
-                result[(isdef, tag, lnum)] = image
+                if self.options.strip_symbol_chars:
+                    tag = tag.strip(SYMBOL_CHARACTERS)
+                if tag:
+                    result[(True, tag, lnum)] = image
         return result
 
 class MergingParser:
@@ -133,7 +134,6 @@ class MergingParser:
         pass
 
     def parse(self, path):
-        # TODO: run in parallel
         def_result = self.def_parser.parse(path)
         ref_result = self.ref_parser.parse(path)
         result = def_result.copy()
@@ -156,7 +156,7 @@ def parse_langmap(string):
     return langmap
 
 def handle_requests(langmap, options):
-    ctags_parser = CtagsParser()
+    ctags_parser = CtagsParser(options)
     pygments_parser = PygmentsParser(langmap, options)
     parser = MergingParser(ctags_parser, pygments_parser)
     while True:
@@ -188,6 +188,6 @@ opt_parser.add_option('--langmap', dest='langmap')
 if not options.langmap:
     opt_parser.error('--langmap option not given')
 langmap = parse_langmap(options.langmap)
-parser_options = PygmentsParser.Options()
+parser_options = ParserOptions()
 get_parser_options_from_env(parser_options)
 handle_requests(langmap, parser_options)
