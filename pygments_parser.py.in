@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#!@PYTHON@
 
 import os
 import subprocess
@@ -9,6 +9,8 @@ import optparse
 import pygments
 from pygments.token import Token
 from pygments import lexers
+
+EXUBERANT_CTAGS = "@EXUBERANT_CTAGS@"
 
 # In most cases, lexers can be looked up with lowercase form of formal
 # language names. This dictionary defines exceptions.
@@ -103,8 +105,8 @@ class PygmentsParser:
             return None
 
 class CtagsParser:
-    def __init__(self, options):
-        self.process = subprocess.Popen(['ctags', '-xu', '--filter', '--filter-terminator=' + TERMINATOR + '\n', '--format=1'], bufsize=-1,
+    def __init__(self, ctags_command, options):
+        self.process = subprocess.Popen([ctags_command, '-xu', '--filter', '--filter-terminator=' + TERMINATOR + '\n', '--format=1'], bufsize=-1,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
         self.child_stdout = self.process.stdout
         self.child_stdin = self.process.stdin
@@ -156,9 +158,12 @@ def parse_langmap(string):
     return langmap
 
 def handle_requests(langmap, options):
-    ctags_parser = CtagsParser(options)
-    pygments_parser = PygmentsParser(langmap, options)
-    parser = MergingParser(ctags_parser, pygments_parser)
+    if EXUBERANT_CTAGS != '' and EXUBERANT_CTAGS != 'no':
+        ctags_parser = CtagsParser(EXUBERANT_CTAGS, options)
+        pygments_parser = PygmentsParser(langmap, options)
+        parser = MergingParser(ctags_parser, pygments_parser)
+    else:
+        parser = PygmentsParser(langmap, options)
     while True:
         path = sys.stdin.readline()
         if not path:

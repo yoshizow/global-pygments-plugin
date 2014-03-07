@@ -54,7 +54,6 @@
 #define INITIAL_BUFSIZE		1024
 
 static char *argv[] = {
-	PYTHON,
 	PYGMENTS_PARSER,
 	NULL,
 	NULL
@@ -89,11 +88,11 @@ start_process(const struct parser_param *param)
 {
 	int opipe[2], ipipe[2];
 
-	argv[2] = malloc(sizeof(LANGMAP_OPTION) + strlen(param->langmap));
-	if (argv[2] == NULL)
+	argv[1] = malloc(sizeof(LANGMAP_OPTION) + strlen(param->langmap));
+	if (argv[1] == NULL)
 		param->die("short of memory.");
-	memcpy(argv[2], LANGMAP_OPTION, sizeof(LANGMAP_OPTION) - 1);
-	copy_langmap_converting_cpp(argv[2] + sizeof(LANGMAP_OPTION) - 1, param->langmap);
+	memcpy(argv[1], LANGMAP_OPTION, sizeof(LANGMAP_OPTION) - 1);
+	copy_langmap_converting_cpp(argv[1] + sizeof(LANGMAP_OPTION) - 1, param->langmap);
 
 	if (pipe(opipe) < 0 || pipe(ipipe) < 0)
 		param->die("cannot create pipe.");
@@ -107,13 +106,13 @@ start_process(const struct parser_param *param)
 			param->die("dup2 failed.");
 		close(opipe[0]);
 		close(ipipe[1]);
-		execvp(PYTHON, argv);
+		execvp(PYGMENTS_PARSER, argv);
 		param->die("execvp failed.");
 	}
 	/* parent process */
 	if (pid < 0)
 		param->die("fork failed.");
-	free(argv[2]);
+	free(argv[1]);
 	close(opipe[0]);
 	close(ipipe[1]);
 	ip = fdopen(ipipe[0], "r");

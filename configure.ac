@@ -63,11 +63,45 @@ AC_CHECK_FUNCS([dup2 strstr])
 
 AC_DJGPP
 
+dnl
+dnl for gtags.conf and function layer plugin parser sample.
+dnl
+AC_MSG_CHECKING(for exuberant ctags program)
+AC_ARG_WITH(exuberant-ctags,
+[  --with-exuberant-ctags=PROGRAM  specify Exuberant Ctags program ],
+[
+	EXUBERANT_CTAGS="$withval"
+        if test "$withval" = no; then
+                AC_MSG_RESULT(no)
+	else
+                AC_MSG_RESULT([using $EXUBERANT_CTAGS])
+	fi
+],
+[
+	for d in `echo $PATH | sed -e 's/^:/.:/' -e 's/::/:.:/g' -e 's/:$/:./' -e 's/:/ /g'`
+	do
+		if test -x "$d/ctags" && (sh -c "'$d/ctags' --version" | grep "Exuberant Ctags") > /dev/null 2>&1; then
+			withval="$d/ctags"
+			break
+		fi
+	done
+	if test "$withval" = ''; then
+		AC_MSG_RESULT(no)
+	else
+		EXUBERANT_CTAGS="$withval"
+		AC_MSG_RESULT([using $EXUBERANT_CTAGS])
+	fi
+])
+
+AC_DEFINE_UNQUOTED(EXUBERANT_CTAGS, "$EXUBERANT_CTAGS", [Exuberant Ctags program.])
+AC_SUBST(EXUBERANT_CTAGS)
+
 AM_CPPFLAGS='-I$(top_srcdir)/libparser -DGTAGSDATADIR=\"$(datadir)/gtags\"'
 
 AC_SUBST(AM_CPPFLAGS)
 
 AC_CONFIG_FILES([Makefile
+	pygments_parser.py
 	libparser/Makefile
 	plugin-factory/Makefile
 ])
