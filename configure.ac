@@ -7,7 +7,7 @@ dnl	2011, 2012, 2013
 dnl	Tama Communications Corporation
 dnl Copyright (c) 2014 Yoshitaro Makise
 dnl
-dnl This file is part of Pygments plug-in parser for GNU GLOBAL.
+dnl This file is part of Pygments Plug-in Parser for GNU GLOBAL.
 dnl
 dnl This program is free software: you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by

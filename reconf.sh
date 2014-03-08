@@ -3,7 +3,7 @@
 # Copyright (c) 2001, 2003, 2012 Tama Communications Corporation
 # Copyright (c) 2014 Yoshitaro Makise
 #
-# This file is part of Pygments plug-in parser for GNU GLOBAL.
+# This file is part of Pygments Plug-in Parser for GNU GLOBAL.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
