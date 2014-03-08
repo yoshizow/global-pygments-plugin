@@ -60,7 +60,7 @@ class PygmentsParserTestCase(unittest.TestCase):
                                     (False, 'c', 3): ''})
 
     @patch('pygments.lexers.get_lexer_by_name')
-    def test_parse_strip_symbol_chars(self, mock_get_lexer_by_name):
+    def test_parse_strip_punctuation(self, mock_get_lexer_by_name):
         tokens = iter([(0, Token.Name, '!"#$%&\'()*+,/:-_.;<=>?@[\\]^`{|}~')])
         mock_lexer = mock_get_lexer_by_name.return_value
         mock_lexer.get_tokens_unprocessed.return_value = tokens
@@ -68,14 +68,14 @@ class PygmentsParserTestCase(unittest.TestCase):
         
         langmap = {'.test': 'Test'}
         options = ParserOptions()
-        options.strip_symbol_chars = True
+        options.strip_punctuation = True
         parser = PygmentsParser(langmap, options)
         with patch('__builtin__.open', mock_open(read_data=text), create=True):
             tags = parser.parse('hello.test')
             self.assertEqual(tags, {(False, '-_.', 1): ''})
 
     @patch('pygments.lexers.get_lexer_by_name')
-    def test_parse_no_strip_symbol_chars(self, mock_get_lexer_by_name):
+    def test_parse_no_strip_punctuation(self, mock_get_lexer_by_name):
         tokens = iter([(0, Token.Name, '!"#$%&\'()*+,/:-_.;<=>?@[\\]^`{|}~')])
         mock_lexer = mock_get_lexer_by_name.return_value
         mock_lexer.get_tokens_unprocessed.return_value = tokens

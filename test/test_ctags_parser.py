@@ -15,14 +15,14 @@ class CtagsParserTestCase(unittest.TestCase):
         tags = parser.parse('hello2.test')
         self.assertEqual(tags, {(True, 'cc', 1): 'def cc'})
 
-    def test_parse_strip_symbol_chars(self):
+    def test_parse_strip_punctuation(self):
         options = ParserOptions()
-        options.strip_symbol_chars = True
+        options.strip_punctuation = True
         parser = CtagsParser('./ctags_stub.py', options)
         tags = parser.parse('punct.test')
         self.assertEqual(tags, {(True, '-_.', 123): 'def !"#$%&\'()*+,/:-_.;<=>?@[\\]^`{|}~'})
 
-    def test_parse_no_strip_symbol_chars(self):
+    def test_parse_no_strip_punctuation(self):
         options = ParserOptions()
         parser = CtagsParser('./ctags_stub.py', options)
         tags = parser.parse('punct.test')

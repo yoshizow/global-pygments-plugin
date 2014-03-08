@@ -21,14 +21,15 @@ LANGUAGE_ALIASES = {
     'xbase':      'XBase'
 }
 
-# Symbol characters: all punctuation chars except some chars
-SYMBOL_CHARACTERS = string.punctuation.translate(None, '-_.')
+# All punctuation characters except some characters which are valid
+# identifier characters in some languages
+PUNCTUATION_CHARACTERS = string.punctuation.translate(None, '-_.')
 
 TERMINATOR = '###terminator###\n'
 
 class ParserOptions:
     def __init__(self):
-        self.strip_symbol_chars = False
+        self.strip_punctuation = False
 
 class PygmentsParser:
     class ContentParser:
@@ -66,8 +67,8 @@ class PygmentsParser:
                     while self.lines_index[cur_line] <= index:
                         cur_line += 1
                     tag = re.sub('\s+', '', tag)    # remove newline and spaces
-                    if self.options.strip_symbol_chars:
-                        tag = tag.strip(SYMBOL_CHARACTERS)
+                    if self.options.strip_punctuation:
+                        tag = tag.strip(PUNCTUATION_CHARACTERS)
                     if tag:
                         result[(False, tag, cur_line + 1)] = ''
             return result
@@ -124,8 +125,8 @@ class CtagsParser:
             match = re.search(r'(\S+)\s+(\d+)\s+' + re.escape(path) + '\s+(.*)$', line)
             if match:
                 (tag, lnum, image) = match.groups()
-                if self.options.strip_symbol_chars:
-                    tag = tag.strip(SYMBOL_CHARACTERS)
+                if self.options.strip_punctuation:
+                    tag = tag.strip(PUNCTUATION_CHARACTERS)
                 if tag:
                     result[(True, tag, int(lnum))] = image
         return result
@@ -185,8 +186,8 @@ def get_parser_options_from_env(parser_options):
     if env:
         for s in env.split(','):
             s = s.strip()
-            if s == 'stripsymbolchars':
-                parser_options.strip_symbol_chars = True
+            if s == 'strippunctuation':
+                parser_options.strip_punctuation = True
 
 def main():
     opt_parser = optparse.OptionParser()
