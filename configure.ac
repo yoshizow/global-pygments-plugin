@@ -104,5 +104,6 @@ AC_CONFIG_FILES([Makefile
 	pygments_parser.py
 	libparser/Makefile
 	plugin-factory/Makefile
+	test/Makefile
 ])
 AC_OUTPUT

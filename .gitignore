@@ -20,3 +20,6 @@ missing
 stamp-h1
 .deps/
 .libs/
+*.la
+*.lo
+*.pyc

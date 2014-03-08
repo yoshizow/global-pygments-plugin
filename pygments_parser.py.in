@@ -6,9 +6,8 @@ import sys
 import re
 import string
 import optparse
-import pygments
+import pygments.lexers
 from pygments.token import Token
-from pygments import lexers
 
 EXUBERANT_CTAGS = "@EXUBERANT_CTAGS@"
 
@@ -45,6 +44,7 @@ class PygmentsParser:
             tokens = self.lexer.get_tokens_unprocessed(self.text)
             return self.parse_tokens(tokens)
 
+        # builds index of beginning of line
         def build_lines_index(self, text):
             lines_index = []
             cur = 0
@@ -62,9 +62,10 @@ class PygmentsParser:
             cur_line = 0
             for index, tokentype, tag in tokens:
                 if tokentype in Token.Name:
+                    # we can assume index are delivered in ascending order
                     while self.lines_index[cur_line] <= index:
                         cur_line += 1
-                    tag = re.sub('\s+', '', tag)    # remove newline
+                    tag = re.sub('\s+', '', tag)    # remove newline and spaces
                     if self.options.strip_symbol_chars:
                         tag = tag.strip(SYMBOL_CHARACTERS)
                     if tag:
@@ -91,7 +92,7 @@ class PygmentsParser:
             name = lang.lower()
             if name in LANGUAGE_ALIASES:
                 name = LANGUAGE_ALIASES[name]
-            lexer = lexers.get_lexer_by_name(name)
+            lexer = pygments.lexers.get_lexer_by_name(name)
             return lexer
         return None
 
@@ -106,7 +107,7 @@ class PygmentsParser:
 
 class CtagsParser:
     def __init__(self, ctags_command, options):
-        self.process = subprocess.Popen([ctags_command, '-xu', '--filter', '--filter-terminator=' + TERMINATOR + '\n', '--format=1'], bufsize=-1,
+        self.process = subprocess.Popen([ctags_command, '-xu', '--filter', '--filter-terminator=' + TERMINATOR, '--format=1'], bufsize=-1,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, close_fds=True)
         self.child_stdout = self.process.stdout
         self.child_stdin = self.process.stdin
@@ -187,12 +188,16 @@ def get_parser_options_from_env(parser_options):
             if s == 'stripsymbolchars':
                 parser_options.strip_symbol_chars = True
 
-opt_parser = optparse.OptionParser()
-opt_parser.add_option('--langmap', dest='langmap')
-(options, args) = opt_parser.parse_args()
-if not options.langmap:
-    opt_parser.error('--langmap option not given')
-langmap = parse_langmap(options.langmap)
-parser_options = ParserOptions()
-get_parser_options_from_env(parser_options)
-handle_requests(langmap, parser_options)
+def main():
+    opt_parser = optparse.OptionParser()
+    opt_parser.add_option('--langmap', dest='langmap')
+    (options, args) = opt_parser.parse_args()
+    if not options.langmap:
+        opt_parser.error('--langmap option not given')
+    langmap = parse_langmap(options.langmap)
+    parser_options = ParserOptions()
+    get_parser_options_from_env(parser_options)
+    handle_requests(langmap, parser_options)
+
+if __name__ == '__main__':
+    main()
