@@ -16,7 +16,7 @@ SUBDIRS = libparser plugin-factory test
 gtagsdir = ${datadir}/gtags
 gtags_DATA = pygments_parser.py
 
-EXTRA_DIST = ${gtags_DATA} reconf.sh
+EXTRA_DIST = ${gtags_DATA} reconf.sh sample.globalrc
 
 install-data-hook:
 	if cd $(DESTDIR)$(datadir)/gtags; then \

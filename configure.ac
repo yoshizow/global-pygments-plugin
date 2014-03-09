@@ -22,7 +22,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 dnl
-AC_INIT([Pygments plug-in parser for GNU GLOBAL],[0.0.1])
+AC_INIT([Pygments Plug-in Parser for GNU GLOBAL],[0.1.0])
 AC_CONFIG_SRCDIR(libparser/parser.h)
 AC_CONFIG_HEADERS([config.h:config-h.in])
 AC_PREREQ(2.59)
