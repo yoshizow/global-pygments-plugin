@@ -113,7 +113,7 @@ This enables distinguishing definition tags and reference tags.
 Of course, this is only avaiable for programming languages which is
 supported by ctags.
 
-    $ cat hello.rb
+    $ gtags
     $ global -x message hello.rb 
     message             6 hello.rb         def message; 'hello, world'; end
     $ global -rx message hello.rb 
