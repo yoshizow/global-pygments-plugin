@@ -25,6 +25,7 @@ dnl
 AC_INIT([Pygments Plug-in Parser for GNU GLOBAL],[0.1.0])
 AC_CONFIG_SRCDIR(libparser/parser.h)
 AC_CONFIG_HEADERS([config.h:config-h.in])
+AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ(2.59)
 AM_INIT_AUTOMAKE([1.9.3 gnu])
 

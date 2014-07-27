@@ -18,6 +18,8 @@ gtags_DATA = pygments_parser.py
 
 EXTRA_DIST = ${gtags_DATA} reconf.sh sample.globalrc
 
+ACLOCAL_AMFLAGS = -I m4
+
 install-data-hook:
 	if cd $(DESTDIR)$(datadir)/gtags; then \
 		chmod 755 pygments_parser.py; \
