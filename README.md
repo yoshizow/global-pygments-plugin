@@ -13,7 +13,7 @@ as well as symbol tags which are collected with Pygments.
 - gtags (GNU GLOBAL) 5.8.1 or later
 - Python 2.6 or later (3.x is not supported)
 - Pygments python package
-- automake, autoconf
+- automake, autoconf, libtool
 - Exuberant Ctags 5.5 or later (optional)
 
 ## Install
@@ -185,6 +185,7 @@ Tested with:
 - Python 2.7.3
 - Pygments 1.6
 - autoconf 2.69
-- automake 1.12.6
+- automake 1.14.1
+- libtool 2.4.2
 - global 6.2.9
 - Exuberant Ctags 5.8

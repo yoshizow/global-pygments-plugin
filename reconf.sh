@@ -26,8 +26,13 @@ case $1 in
 --help)	echo "Usage: sh reconf.sh [--configure|--make|--install]"
 	exit 0;;
 esac
-prog='autoconf automake libtool m4'	# required programs
+prog='autoconf automake m4'	# required programs
 file='configure.ac Makefile.am libparser/parser.h'	# required files
+
+case `uname` in
+    Darwin*) prog="$prog glibtool" ;;
+    *)       prog="$prog libtool" ;;
+esac
 
 echo "- File existent checking..."
 for f in `echo $file`; do
@@ -60,7 +65,7 @@ for p in `echo $prog`; do
 	done
 	case $found in
 	0)	echo "*** Program '$p' not found."
-		echo "Please install `echo $p | sed 's/autoreconf/automake and autoconf/'`."
+		echo "Please install `echo $p | sed -e 's/autoreconf/automake and autoconf/' -e 's/glibtool/libtool/'`."
 		exit 1;;
 	esac
 	case $p in
