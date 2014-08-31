@@ -106,5 +106,7 @@ AC_CONFIG_FILES([Makefile
 	libparser/Makefile
 	plugin-factory/Makefile
 	test/Makefile
+	test/tests.sh
 ])
+AC_CONFIG_COMMANDS([tests_build], [chmod 755 test/tests.sh])
 AC_OUTPUT

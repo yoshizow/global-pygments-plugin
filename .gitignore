@@ -5,6 +5,7 @@ libparser/Makefile
 libparser/Makefile.in
 aclocal.m4
 autom4te.cache/
+compile
 config-h.in
 config.guess
 config.h
@@ -18,6 +19,8 @@ libtool
 ltmain.sh
 missing
 stamp-h1
+test-driver
+test-suite.log
 .deps/
 .libs/
 *.la
