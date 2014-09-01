@@ -106,7 +106,8 @@ AC_CONFIG_FILES([Makefile
 	libparser/Makefile
 	plugin-factory/Makefile
 	test/Makefile
+	test/ctags_stub.py
 	test/tests.sh
 ])
-AC_CONFIG_COMMANDS([tests_build], [chmod 755 test/tests.sh])
+AC_CONFIG_COMMANDS([tests_build], [chmod 755 test/tests.sh test/ctags_stub.py])
 AC_OUTPUT
