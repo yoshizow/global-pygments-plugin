@@ -8,6 +8,9 @@ Supports wide variety of programming languages thanks to Pygments.
 This software can also use Exuberant Ctags for collecting definition tags
 as well as symbol tags which are collected with Pygments.
 
+**Note**: global-pygments-plugin is now bundled with GLOBAL-6.3.2 or later.
+Please use the bundled version in normal case.
+
 ## Prerequisites
 
 - gtags (GNU GLOBAL) 5.8.1 or later
