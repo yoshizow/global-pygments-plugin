@@ -1,3 +1,12 @@
+# IMPORTANT NOTICE!
+
+**global-pygments-plugin is now bundled with [GNU GLOBAL](https://www.gnu.org/software/global/).  
+The development continues in the GLOBAL community and you can find the latest code there.**
+
+**This repository is no longer maintained and just remain for reference purposes.**
+
+----
+
 # Pygments Plug-in Parser for GNU GLOBAL
 
 This software is a plug-in parser for GNU GLOBAL.
@@ -7,9 +16,6 @@ Supports wide variety of programming languages thanks to Pygments.
 
 This software can also use Exuberant Ctags for collecting definition tags
 as well as symbol tags which are collected with Pygments.
-
-**Note**: global-pygments-plugin is now bundled with GLOBAL-6.3.2 or later.
-Please use the bundled version in normal case.
 
 ## Prerequisites
 
